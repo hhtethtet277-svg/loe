@@ -11,7 +11,7 @@ import time
 CONFIG_FILE = "config_rshokauser.json"
 
 # ==================== FIXED URL ====================
-FIXED_URL = "https://portal-as.ruijienetworks.com/api/auth/wifidog?stage=portal&gw_id=c8cd555c90fe&gw_sn=H1T07Y5002825&gw_address=192.168.110.1&gw_port=2060&ip=192.168.110.14&mac=b2:d5:ee:b0:d8:f6&slot_num=8&nasip=192.168.1.151&ssid=VLAN233&ustate=0&mac_req=1&url=http%3A%2F%2F192.168.0.1%2F&chap_id=%5C111&chap_challenge=%5C133%5C017%5C322%5C100%5C140%5C102%5C321%5C360%5C140%5C300%5C055%5C154%5C140%5C312%5C116%5C071"
+FIXED_URL = "https://portal-as.ruijienetworks.com/api/auth/wifidog?stage=portal&gw_id=c4b25bf98f07&gw_sn=H1U3247000617&gw_address=150.0.0.1&gw_port=2060&ip=150.0.169.45&mac=c6:8a:b9:f0:93:e8&slot_num=14&nasip=192.168.1.218&ssid=VLAN150&ustate=0&mac_req=1&url=http%3A%2F%2F192.168.0.1%2F&chap_id=%5C012&chap_challenge=%5C340%5C117%5C267%5C250%5C020%5C113%5C073%5C370%5C213%5C271%5C265%5C055%5C000%5C071%5C252%5C170"
 # ===================================================
 
 # Color codes
