@@ -8,7 +8,7 @@ import ping3
 from ping3 import ping
 import time
 
-CONFIG_FILE = "config_rshokauser.json"
+CONFIG_FILE = "config_kuranomistablebypass.json"
 
 # ==================== FIXED URL ====================
 FIXED_URL = "https://portal-as.ruijienetworks.com/api/auth/wifidog?stage=portal&gw_id=c4b25bf98f07&gw_sn=H1U3247000617&gw_address=150.0.0.1&gw_port=2060&ip=150.0.169.45&mac=c6:8a:b9:f0:93:e8&slot_num=14&nasip=192.168.1.218&ssid=VLAN150&ustate=0&mac_req=1&url=http%3A%2F%2F192.168.0.1%2F&chap_id=%5C012&chap_challenge=%5C340%5C117%5C267%5C250%5C020%5C113%5C073%5C370%5C213%5C271%5C265%5C055%5C000%5C071%5C252%5C170"
@@ -23,41 +23,36 @@ c = "\033[1;36m"
 
 # Global variables
 auto_loop_running = False
-loop_interval = 60  # Default
+loop_interval = 20  # Default
 internet_connected = False
 last_ping_time = 0
 ping_history = []
-
-# Store user inputs
-user_mac = ""
-user_voucher = ""
-user_gateway = ""
+disconnect_count = 0
+total_downtime = 0
 
 def clear_screen():
     os.system('clear' if os.name == 'posix' else 'cls')
 
 def banner():
     print("\033[1;31m" + "="*56)
-    print("\033[1;31m  ██████╗ ███████╗██╗  ██╗ ██████╗  ██╗  ██╗ █████╗ \033[0m")
-    print("\033[1;31m  ██╔══██╗██╔════╝██║  ██║██╔═══██╗██║ ██╔╝██╔══██╗\033[0m")
-    print("\033[1;31m  ██████╔╝███████╗███████║██║   ██║█████╔╝ ███████║\033[0m")
-    print("\033[1;31m  ██╔══██╗╚════██║██╔══██║██║   ██║██╔═██╗ ██╔══██║\033[0m")
-    print("\033[1;31m  ██║  ██║███████║██║  ██║╚██████╔╝██║  ██╗██║  ██║\033[0m")
-    print("\033[1;31m  ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝\033[0m")
+    print("\033[1;31m █████╗ ██████╗ ███████╗██╗  ██╗ ██████╗ █████╗ \033[0m")
+    print("\033[1;31m██╔══██╗██╔══██╗██╔════╝██║  ██║██╔═══██╗██╔══██╗\033[0m")
+    print("\033[1;31m███████║██████╔╝███████║███████║██║   ██║███████║\033[0m")
+    print("\033[1;31m██╔══██║██╔══██╗╚════██║██╔══██║██║   ██║██╔══██║\033[0m")
+    print("\033[1;31m██║  ██║██║  ██║███████║██║  ██║╚██████╔╝██║  ██║\033[0m")
+    print("\033[1;31m╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝\033[0m")
     print("\033[1;31m" + "="*56 + "\033[0m")
-    print("\033[1;36m          R S H O KA - Wifi Bypass Premium  \033[0m")
+    print("\033[1;36m          ARSHOKA - WiFi Bypass Ultra Stable  \033[0m")
     print("\033[1;36m       Developer: @Nain663\033[0m")
     print("\033[1;31m" + "="*56 + "\033[0m")
 
 def show_menu():
     print("\n" + "="*56)
-    print("\033[1;33m[ MODE SELECTION ]\033[0m")
-    print("  \033[1;32m[1]\033[0m ⏭ Bypass Mode!")
-    print("  \033[1;34m[2]\033[0m 📱Gaming Mode  ")
-    print("  \033[1;36m[3]\033[0m ⭐ Stable  ")
-    print("  \033[1;36m[4]\033[0m 📈Super Stable ")
-    print("  \033[1;31m[5]\033[0m 🔄 Change WiFi Settings")
-    print("  \033[1;31m[6]\033[0m 🚪 Exit")
+    print("\033[1;33m[ MAIN MENU ]\033[0m")
+    print("  \033[1;32m[1]\033[0m ⏭ Bypass Mode loop 20second(20s interval)")
+    print("  \033[1;34m[2]\033[0m ⏭ Bypass Mode loop 60second(60s interval)")
+    print("  \033[1;35m[3]\033[0m ⏭ Bypass Mode loop 100second(100 Detection)")
+    print("  \033[1;31m[4]\033[0m 🚪 Exit")
     print("="*56)
 
 def load_config():
@@ -248,7 +243,7 @@ def do_bypass(session_url, mac_address, voucher, gateway_ip):
     }
     params = {
         'token': active_session_id,
-        'phoneNumber': 'loeUser',
+        'phoneNumber': 'KuranomiUser',
     }
     
     try:
@@ -272,26 +267,29 @@ def do_bypass(session_url, mac_address, voucher, gateway_ip):
         print(f"\n\033[1;31m[-] Auth Gateway connection error: {e}\033[0m")
         return False
 
-async def auto_loop_bypass(session_url, mac_address, voucher, gateway_ip, mode="gaming"):
-    """Auto loop bypass function"""
-    global auto_loop_running, loop_interval, internet_connected
+async def auto_loop_bypass(session_url, mac_address, voucher, gateway_ip, mode="stable"):
+    """Auto loop bypass function with different modes"""
+    global auto_loop_running, loop_interval, internet_connected, disconnect_count, total_downtime
     
     auto_loop_running = True
     loop_count = 0
     
     # Set interval based on mode
     if mode == "gaming":
-        loop_interval = 60
+        loop_interval = 20
         mode_name = "🎮 Gaming Mode"
     elif mode == "stable":
-        loop_interval = 20
+        loop_interval = 60
         mode_name = "🛡️ Stable Mode"
-    elif mode == "super":
+    else:  # auto mode
         loop_interval = 100
-        mode_name = "⭐ Super Stable (Recommended)"
-    else: #kill
-         loop_interval = 30
-         mode_name =" Kill "
+        mode_name = "🤖 Auto Mode (Smart Detection)"
+        print("\n" + "="*56)
+        print("  🤖 Auto Mode - Smart Detection Active")
+        print("  📌 Internet ရနေရင် ပြတ်တဲ့အထိ စောင့်မယ်")
+        print("  📌 ပြတ်သွားရင် ပြတ်ချိန် - 40s ကို interval အနေနဲ့ သတ်မှတ်မယ်")
+        print("  📌 Min: 15s | Max: 300s")
+        print("="*56)
     
     print("\n" + "="*56)
     print(f"  🔄 {mode_name}")
@@ -304,6 +302,8 @@ async def auto_loop_bypass(session_url, mac_address, voucher, gateway_ip, mode="
         print(f"\n{'='*56}")
         print(f"  🔄 Loop #{loop_count} - {time.strftime('%Y-%m-%d %H:%M:%S')}")
         print(f"  📡 Mode: {mode_name}")
+        if mode == "auto":
+            print(f"  📊 Downtime Count: {disconnect_count} | Avg: {total_downtime/max(1, disconnect_count):.0f}s")
         print(f"{'='*56}")
         
         # Run bypass
@@ -312,6 +312,36 @@ async def auto_loop_bypass(session_url, mac_address, voucher, gateway_ip, mode="
         # Always check internet status
         result = await get_smart_ping()
         print(f"\n  📊 Ping Result: {result}")
+        
+        # ===== AUTO MODE SMART DETECTION =====
+        if mode == "auto":
+            await asyncio.sleep(2)
+            is_connected = get_internet_status()
+            
+            if is_connected:
+                print(f"\n  {g}✅ Internet is stable! Monitoring for disconnection...{w}")
+                wait_start = time.time()
+                check_count = 0
+                while auto_loop_running:
+                    await asyncio.sleep(5)
+                    check_count += 1
+                    if check_count % 6 == 0:  # Every 30 seconds
+                        print(f"  {c}📡 Monitoring... ({check_count*5}s elapsed){w}")
+                    if not get_internet_status():
+                        down_time = time.time() - wait_start
+                        disconnect_count += 1
+                        total_downtime += down_time
+                        new_interval = max(15, min(300, int(down_time - 40)))
+                        print(f"\n  {y}⚡ Internet disconnected after {down_time:.0f}s{w}")
+                        print(f"  {c}🔄 New interval: {new_interval} seconds (downtime - 40s){w}")
+                        print(f"  📊 Avg downtime: {total_downtime/max(1, disconnect_count):.0f}s")
+                        loop_interval = new_interval
+                        break
+                else:
+                    break
+            else:
+                print(f"\n  {r}❌ Internet is offline. Retrying in 30s...{w}")
+                loop_interval = 30
         
         # ===== WAIT FOR NEXT LOOP =====
         print(f"\n  ⏳ Waiting {loop_interval} seconds before next loop...")
@@ -327,69 +357,49 @@ async def auto_loop_bypass(session_url, mac_address, voucher, gateway_ip, mode="
 
 def get_user_inputs():
     """Get MAC, Voucher, Gateway from user"""
-    global user_mac, user_voucher, user_gateway
-    
     config = load_config()
     
     old_mac = config.get("mac_address", "")
     old_voucher = config.get("voucher", "")
     old_ip = config.get("gateway_ip", "")
     
-    print("\033[1;33m[+] WiFi Settings Configuration\033[0m")
-    print("="*56)
-    print("\033[1;36m[!] Wifiအချက်အလက်များဖြည့်သွင်းပါ:\033[0m\n")
+    print("\033[1;33m[+] WiFi အချက်အလက်များ ထည့်သွင်းပါ (ထည့်သွင်းပြီးသားဖြစ်ပါက Enter နှိပ်ပါ)\033[0m\n")
 
     if old_mac:
-        print(f"\033[1;34m[ Saved MAC ]: {old_mac}\033[0m")
-    mac_address = input("\033[1;32m=> MAC Address (e.g. 10:3f:44:9d:b8:e4): \033[0m").strip() or old_mac
-    if not mac_address:
-        print("\033[1;31m[-] MAC Address ထည့်ပါ!\033[0m")
-        return None, None, None
+        print(f"\033[1;34m[ သိမ်းဆည်းထားသော MAC ]: {old_mac}\033[0m")
+    mac_address = input("\033[1;32m=> MAC Address ထည့်ပါ (နမူနာ=10:3f:44:9d:b8:e4): \033[0m").strip() or old_mac
 
     if old_voucher:
-        print(f"\033[1;34m[ Saved Voucher ]: {old_voucher}\033[0m")
-    voucher = input("\033[1;32m=> Voucher Code: \033[0m").strip() or old_voucher
-    if not voucher:
-        print("\033[1;31m[-] Voucher Code ထည့်ပါ\033[0m")
-        return None, None, None
+        print(f"\033[1;34m[ သိမ်းဆည်းထားသော Voucher ]: {old_voucher}\033[0m")
+    voucher = input("\033[1;32m=> Voucher Code ထည့်ပါ: \033[0m").strip() or old_voucher
 
     if old_ip:
-        print(f"\033[1;34m[ Saved Gateway ]: {old_ip}\033[0m")
-    gateway_ip = input("\033[1;32m=> Gateway IP (e.g. 192.168.60.1): \033[0m").strip() or old_ip
-    if not gateway_ip:
-        print("\033[1;31m[-] Gateway IP ထည့်ပါ!\033[0m")
-        return None, None, None
+        print(f"\033[1;34m[ သိမ်းဆည်းထားသော Gateway ]: {old_ip}\033[0m")
+    gateway_ip = input("\033[1;32m=> Gateway IP ထည့်ပါ (နမူနာ= 192.168.60.1): \033[0m").strip() or old_ip
 
     save_config(mac_address, voucher, gateway_ip)
     
-    # Store in global variables
-    user_mac = mac_address
-    user_voucher = voucher
-    user_gateway = gateway_ip
-    
     return mac_address, voucher, gateway_ip
 
-def start_bypass(mode="gaming"):
+def start_bypass(mode="stable"):
     """Main bypass function with mode selection"""
-    global user_mac, user_voucher, user_gateway
-    
     clear_screen()
     banner()
     
     session_url = FIXED_URL
     
-    # Show current settings
-    print("\n" + "="*56)
-    print("\033[1;36m[ Current Settings ]\033[0m")
-    print(f"  📌 MAC: \033[1;32m{user_mac}\033[0m")
-    print(f"  📌 Voucher: \033[1;32m{user_voucher}\033[0m")
-    print(f"  📌 Gateway: \033[1;32m{user_gateway}\033[0m")
-    print("="*56)
+    # Reset stats for auto mode
+    global disconnect_count, total_downtime
+    disconnect_count = 0
+    total_downtime = 0
     
-    print("\n\033[1;33m[*] Internet Bypass စတင်နေပါပြီ..(bypass fail  ပြလည်းpingပေါ်ရင်လိုင်းရပါတယ်\033[0m")
+    # Get user inputs
+    mac_address, voucher, gateway_ip = get_user_inputs()
+    
+    print("\n\033[1;33m[*] Internet Bypass စတင်နေပါပြီ...\033[0m")
     
     # First bypass
-    success = do_bypass(session_url, user_mac, user_voucher, user_gateway)
+    success = do_bypass(session_url, mac_address, voucher, gateway_ip)
     
     # Ping check (Bypass အောင်သည်ဖြစ်စေ မအောင်သည်ဖြစ်စေ)
     try:
@@ -409,7 +419,7 @@ def start_bypass(mode="gaming"):
     try:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        loop.run_until_complete(auto_loop_bypass(session_url, user_mac, user_voucher, user_gateway, mode))
+        loop.run_until_complete(auto_loop_bypass(session_url, mac_address, voucher, gateway_ip, mode))
         loop.close()
     except KeyboardInterrupt:
         print("\n\n  🛑 Auto loop stopped by user.")
@@ -419,54 +429,27 @@ def start_bypass(mode="gaming"):
     input("\nPress Enter to exit...")
 
 def main():
-    global user_mac, user_voucher, user_gateway
-    
-    # First time - get user inputs
-    clear_screen()
-    banner()
-    mac, voucher, gateway = get_user_inputs()
-    
-    if not mac or not voucher or not gateway:
-        print("\n\033[1;31m[-] All fields are required. Exiting...\033[0m")
-        time.sleep(2)
-        return
-    
     while True:
         clear_screen()
         banner()
-        
-        # Show current settings
-        print("\n" + "="*56)
-        print("\033[1;36m[ Current Settings ]\033[0m")
-        print(f"  📌 MAC: \033[1;32m{user_mac}\033[0m")
-        print(f"  📌 Voucher: \033[1;32m{user_voucher}\033[0m")
-        print(f"  📌 Gateway: \033[1;32m{user_gateway}\033[0m")
-        print("="*56)
-        
         show_menu()
         
-        choice = input("\n\033[1;32m=> Select option (1-6): \033[0m").strip()
+        choice = input("\n\033[1;32m=> Select mode (1-4): \033[0m").strip()
         
         if choice == "1":
-            start_bypass("kill")
-        elif choice == "2":
             start_bypass("gaming")
-        elif choice == "3":
+            break
+        elif choice == "2":
             start_bypass("stable")
+            break
+        elif choice == "3":
+            start_bypass("auto")
+            break
         elif choice == "4":
-            start_bypass("super")
-        elif choice == "5":
-            clear_screen()
-            banner()
-            mac, voucher, gateway = get_user_inputs()
-            if not mac or not voucher or not gateway:
-                print("\n\033[1;31m[-] All fields are required. Keeping old settings.\033[0m")
-                time.sleep(2)
-        elif choice == "6":
             print("\n\033[1;36mGood Bye! See you again.\033[0m")
             break
         else:
-            print("\033[1;31m[-] မှားယွင်းနေပါသည်။ 1-6 အတွင်းသာ ရွေးပေးပါ။\033[0m")
+            print("\033[1;31m[-] မှားယွင်းနေပါသည်။ 1-4 အတွင်းသာ ရွေးပေးပါ။\033[0m")
             time.sleep(1)
 
 if __name__ == "__main__":
